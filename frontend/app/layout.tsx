@@ -1,0 +1,39 @@
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { Providers } from "@/components/layout/Providers"
+
+// The opsz axis switches Inter to its display cut automatically at headline sizes.
+const inter = Inter({ subsets: ["latin"], axes: ["opsz"], variable: "--font-inter", display: "swap" })
+
+export const metadata: Metadata = {
+  title: { default: "docuquery — Understand your documents with AI", template: "%s | docuquery" },
+  description: "Upload your documents, ask questions naturally, and get grounded answers with citations powered by Retrieval Augmented Generation.",
+  metadataBase: new URL("https://docuquery.ai"),
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "docuquery — Understand your documents with AI",
+    description: "Grounded answers from your documents, with citations you can trust.",
+    type: "website",
+    url: "/",
+    siteName: "docuquery",
+    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "docuquery AI document workspace" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "docuquery — Understand your documents with AI",
+    description: "Grounded answers from your documents, with citations you can trust.",
+    images: ["/og-image.svg"],
+  },
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    // data-scroll-behavior lets Next.js turn off the global smooth scrolling during route transitions
+    <html lang="en" className={inter.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body className="font-sans antialiased">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  )
+}
