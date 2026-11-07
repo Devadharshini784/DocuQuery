@@ -32,7 +32,8 @@ def done_event() -> str:
 
 
 def error_event(message: str) -> str:
-    return f"event: error\ndata: {message}\n\n"
+    payload = json.dumps(message, ensure_ascii=False)
+    return f"event: error\ndata: {payload}\n\n"
 
 
 async def stream_with_citations(

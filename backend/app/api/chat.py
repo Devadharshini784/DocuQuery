@@ -10,6 +10,7 @@ No prompt logic here — all business logic lives in app/llm/.
 """
 
 import logging
+from app.llm.stream import error_event
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
@@ -54,7 +55,7 @@ async def chat(
     """
     settings = get_settings()
 
-    # LLM mode intentionally skips retrieval. knowdex and Hybrid use the
+    # LLM mode intentionally skips retrieval. docuquery and Hybrid use the
     # same grounded retrieval pipeline, while Hybrid's prompt also allows
     # general reasoning beyond the retrieved excerpts.
     if chat_request.mode == "llm":
@@ -109,14 +110,14 @@ async def chat(
                 async for event in generator.stream(chat_request.message, retrieval_result, chat_request.mode):
                     yield event
             except RateLimitError:
-                yield "event: error\ndata: Rate limit reached. Please try again shortly.\n\n"
+                yield error_event("Rate limit reached. Please try again shortly.")
             except GenerationTimeoutError:
-                yield "event: error\ndata: The request timed out. Please try again.\n\n"
+                yield error_event("The request timed out. Please try again.")
             except ProviderUnavailableError:
-                yield "event: error\ndata: AI service is temporarily unavailable.\n\n"
+                yield error_event("AI service is temporarily unavailable.")
             except (NoContextError, MalformedResponseError) as exc:
                 logger.error("[chat] Generation error: %s", exc)
-                yield "event: error\ndata: Failed to generate a response.\n\n"
+                yield error_event("Failed to generate a response.")
 
         return StreamingResponse(_stream(), media_type="text/event-stream")
 

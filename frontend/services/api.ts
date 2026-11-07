@@ -184,8 +184,16 @@ export const chatApi = {
               // malformed citation JSON — skip
             }
           } else if (currentEventType === "error") {
-            yield { type: "error", data: payload }
-          } else if (currentEventType === "token") {
+  let message = payload
+
+  try {
+    message = JSON.parse(payload) as string
+  } catch {
+    // Support older backend responses that send plain text.
+  }
+
+  yield { type: "error", data: message }
+} else if (currentEventType === "token") {
             try {
               yield { type: "token", data: JSON.parse(payload) as string }
             } catch {
