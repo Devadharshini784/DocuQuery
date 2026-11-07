@@ -51,10 +51,6 @@ and hands the model only that — then shows you exactly where the answer came f
 
 <br/>
 
-<div align="center">
-<img src="docs/screenshots/hero-light.png" alt="docuquery landing page in light mode" width="760">
-</div>
-
 ---
 
 ## 🧭 How it works
