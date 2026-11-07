@@ -6,6 +6,7 @@ import logging
 import time
 from typing import AsyncGenerator
 
+import json
 import httpx
 
 from app.llm.providers.base import BaseLLMProvider
@@ -19,6 +20,20 @@ from app.llm.exceptions import (
 
 logger = logging.getLogger(__name__)
 
+def _decode_ollama_payload(raw: str) -> dict:
+    try:
+        payload = json.loads(raw)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise MalformedResponseError(
+            "Ollama returned invalid JSON."
+        ) from exc
+
+    if not isinstance(payload, dict):
+        raise MalformedResponseError(
+            "Ollama returned an unexpected response format."
+        )
+
+    return payload
 
 class OllamaProvider(BaseLLMProvider):
     def __init__(self, base_url: str = "http://localhost:11434", timeout: float = 60.0) -> None:
@@ -45,7 +60,7 @@ class OllamaProvider(BaseLLMProvider):
         except httpx.HTTPError as exc:
             raise ProviderUnavailableError(str(exc)) from exc
 
-        data = resp.json()
+        data = _decode_ollama_payload(resp.text)
         answer = data.get("response", "")
         if not answer:
             raise MalformedResponseError("Ollama returned empty response.")
@@ -54,7 +69,6 @@ class OllamaProvider(BaseLLMProvider):
         return LLMResponse(answer=answer, citations=[], model=request.model)
 
     async def stream(self, request: LLMRequest) -> AsyncGenerator[str, None]:
-        import json
         t0 = time.monotonic()
         payload = {
             "model": request.model,
@@ -69,7 +83,7 @@ class OllamaProvider(BaseLLMProvider):
                     async for line in resp.aiter_lines():
                         if not line:
                             continue
-                        data = json.loads(line)
+                        data = _decode_ollama_payload(line)
                         token = data.get("response", "")
                         if token:
                             yield token
