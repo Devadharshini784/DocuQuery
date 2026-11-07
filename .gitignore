@@ -3,7 +3,7 @@
 node_modules/
 
 # Python virtualenv (project root)
-knowdex/
+docuquery/
 .venv/
 venv/
 __pycache__/
@@ -19,3 +19,14 @@ Thumbs.db
 
 # Playwright MCP snapshots, screenshots and console logs
 .playwright-mcp/
+
+desktop.ini
+
+@'
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+!backend/.env.example
+'@ | Add-Content -Path .gitignore -Encoding utf8
